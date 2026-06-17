@@ -34,6 +34,7 @@ const Register = () => {
           <select className="w-full p-3 border rounded" value={role} onChange={e => setRole(e.target.value)}>
             <option value="student">Talaba</option>
             <option value="teacher">O'qituvchi</option>
+            <option value="admin">Admin (Zashta uchun)</option>
           </select>
           <button className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Ro'yxatdan o'tish</button>
         </form>
