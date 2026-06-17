@@ -1,26 +1,16 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { userData, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout error", error);
-    }
-  };
+  const { userData, toggleRole } = useAuth();
 
   return (
-    <nav className="bg-indigo-700 text-white shadow-lg">
+    <nav className="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center space-x-8">
-            <Link to="/" className="text-xl font-bold tracking-tight">
+            <Link to="/dashboard" className="text-xl font-bold tracking-tight">
               EduCloud <span className="text-indigo-200">Secure</span>
             </Link>
             <div className="hidden md:flex space-x-4">
@@ -33,17 +23,22 @@ const Navbar = () => {
               )}
             </div>
           </div>
+          
           <div className="flex items-center space-x-4">
-            <div className="flex flex-col items-end mr-2">
-              <span className="text-sm font-medium">{userData?.name}</span>
-              <span className="text-xs text-indigo-200 uppercase">{userData?.role}</span>
-            </div>
+            {/* Zashta uchun maxsus Switcher */}
             <button 
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-semibold transition"
+              onClick={toggleRole}
+              className="bg-indigo-500 hover:bg-indigo-400 text-[10px] px-3 py-1 rounded-full border border-indigo-300 transition"
             >
-              Chiqish
+              🔄 Rolni almashtirish ({userData?.role === 'admin' ? 'Student' : 'Admin'}ga)
             </button>
+
+            <div className="flex flex-col items-end border-l pl-4 border-indigo-500">
+              <span className="text-sm font-medium">{userData?.name}</span>
+              <span className="text-[10px] bg-white text-indigo-700 px-2 rounded-full uppercase font-bold">
+                {userData?.role}
+              </span>
+            </div>
           </div>
         </div>
       </div>
