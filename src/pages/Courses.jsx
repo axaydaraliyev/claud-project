@@ -7,7 +7,9 @@ import {
   addDoc, 
   getDocs, 
   query, 
-  serverTimestamp 
+  serverTimestamp,
+  deleteDoc,
+  doc 
 } from "firebase/firestore";
 
 const Courses = () => {
@@ -16,6 +18,7 @@ const Courses = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
     fetchCourses();
@@ -23,31 +26,39 @@ const Courses = () => {
 
   const fetchCourses = async () => {
     try {
+      setFetchError("");
+      console.log("Kurslarni yuklash boshlandi...");
       const q = query(collection(db, "courses"));
       const snap = await getDocs(q);
-      setCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log("Yuklangan kurslar:", data);
+      setCourses(data);
     } catch (err) {
-      console.error("Firebase error (Courses):", err);
+      console.error("Firebase error (Courses fetch):", err);
+      setFetchError("Kurslarni yuklashda xatolik yuz berdi: " + err.message);
     }
   };
 
   const handleAddCourse = async (e) => {
     e.preventDefault();
+    if (!title) return;
     try {
       setLoading(true);
-      await addDoc(collection(db, "courses"), {
+      console.log("Yangi kurs qo'shilmoqda:", { title, description });
+      const docRef = await addDoc(collection(db, "courses"), {
         title,
         description,
         teacherId: currentUser?.uid || "anonymous",
         teacherName: userData?.name || "O'qituvchi",
         createdAt: serverTimestamp()
       });
+      console.log("Kurs muvaffaqiyatli qo'shildi, ID:", docRef.id);
       setTitle("");
       setDescription("");
-      fetchCourses();
+      await fetchCourses(); // Yangi ro'yxatni tortib olamiz
     } catch (err) {
-      console.error(err);
-      alert("Faqat Firebase ulanmagan bo'lsa xato beradi.");
+      console.error("Kurs qo'shishda xatolik:", err);
+      alert("Xatolik: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -57,27 +68,35 @@ const Courses = () => {
     <div className="p-8 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">O'quv Kurslari</h1>
 
-      <div className="bg-white p-8 rounded-2xl shadow-lg mb-12 border border-blue-100">
-        <h2 className="text-xl font-bold mb-6 text-blue-700">Yangi Kurs yaratish</h2>
-        <form onSubmit={handleAddCourse} className="space-y-4">
-          <input 
-            type="text" placeholder="Kurs nomi" 
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            value={title} onChange={e => setTitle(e.target.value)} required
-          />
-          <textarea 
-            placeholder="Kurs tavsifi" 
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            value={description} onChange={e => setDescription(e.target.value)}
-          />
-          <button 
-            type="submit" disabled={loading}
-            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg"
-          >
-            {loading ? "Yaratilmoqda..." : "Kursni yaratish"}
-          </button>
-        </form>
-      </div>
+      {fetchError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {fetchError}
+        </div>
+      )}
+
+      {(userData?.role === "teacher" || userData?.role === "admin") && (
+        <div className="bg-white p-8 rounded-2xl shadow-lg mb-12 border border-blue-100">
+          <h2 className="text-xl font-bold mb-6 text-blue-700">Yangi Kurs yaratish</h2>
+          <form onSubmit={handleAddCourse} className="space-y-4">
+            <input 
+              type="text" placeholder="Kurs nomi" 
+              className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              value={title} onChange={e => setTitle(e.target.value)} required
+            />
+            <textarea 
+              placeholder="Kurs tavsifi" 
+              className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              value={description} onChange={e => setDescription(e.target.value)}
+            />
+            <button 
+              type="submit" disabled={loading}
+              className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg"
+            >
+              {loading ? "Yaratilmoqda..." : "Kursni yaratish"}
+            </button>
+          </form>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {courses.map(course => (
@@ -95,7 +114,7 @@ const Courses = () => {
             </div>
           </div>
         ))}
-        {courses.length === 0 && !loading && (
+        {courses.length === 0 && !loading && !fetchError && (
           <p className="text-gray-400">Kurslar mavjud emas. Yuqoridagi formadan yangi kurs yarating.</p>
         )}
       </div>
