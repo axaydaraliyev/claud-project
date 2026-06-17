@@ -39,6 +39,17 @@ const Navbar = () => {
                 {userData?.role}
               </span>
             </div>
+
+            {/* Chiqish tugmasi */}
+            <button 
+              onClick={() => {
+                useAuth().logout(); // AuthContext-dan logoutni chaqirish
+                window.location.href = "/login"; // Login sahifasiga qaytarish
+              }}
+              className="ml-4 bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg font-bold transition shadow-sm"
+            >
+              Chiqish
+            </button>
           </div>
         </div>
       </div>
