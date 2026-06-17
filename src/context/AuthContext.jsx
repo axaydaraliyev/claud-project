@@ -6,7 +6,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   // Boshlang'ich holat - Admin
   const [userData, setUserData] = useState({
-    name: "Haydaraliyev Akbarali",
+    name: "Odinaxon Abdurashidova",
     email: "admin@educloud.uz",
     role: "admin",
   });
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     setUserData(prev => ({
       ...prev,
       role: prev.role === "admin" ? "student" : "admin",
-      name: prev.role === "admin" ? "Talaba (Test Rejimi)" : "Haydaraliyev Akbarali",
+      name: prev.role === "admin" ? "Talaba (Test Rejimi)" : "Odinaxon Abdurashidova",
     }));
   };
 
