@@ -1,9 +1,19 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { userData, toggleRole } = useAuth();
+  const { userData, toggleRole, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error", error);
+    }
+  };
 
   return (
     <nav className="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
@@ -42,10 +52,7 @@ const Navbar = () => {
 
             {/* Chiqish tugmasi */}
             <button 
-              onClick={() => {
-                useAuth().logout(); // AuthContext-dan logoutni chaqirish
-                window.location.href = "/login"; // Login sahifasiga qaytarish
-              }}
+              onClick={handleLogout}
               className="ml-4 bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg font-bold transition shadow-sm"
             >
               Chiqish
